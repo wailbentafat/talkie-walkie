@@ -18,7 +18,10 @@ class WebSocketProvider with ChangeNotifier {
 
  
   void connect() {
-    _channel = IOWebSocketChannel.connect('ws://your-server-url');
+    _channel = IOWebSocketChannel.connect('ws://192.168.1.163:8080/ws');
+    _channel.stream.handleError((onError) {
+      print('Error: $onError');
+    });
     _channel.stream.listen((message) {
       if (message is List<int>) {
         _playAudio(Uint8List.fromList(message));
@@ -46,7 +49,7 @@ class WebSocketProvider with ChangeNotifier {
     }
   }
 
-  // Stop recording
+
   Future<void> stopRecording() async {
     await _recorder.stop();
     _isRecording = false;

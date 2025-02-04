@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:talkiwalkie/provider/soundprovider.dart';
 
 class Home extends StatefulWidget {
   const Home({super.key});
@@ -10,29 +12,29 @@ class Home extends StatefulWidget {
 class _HomeState extends State<Home> {
   @override
   Widget build(BuildContext context) {
+    final webSocketProvider = Provider.of<WebSocketProvider>(context, listen: false);
+
     return Scaffold(
-      appBar: PreferredSize(
-        preferredSize: const Size.fromHeight(56.0),
-        child: AppBar(
-          backgroundColor: Colors.deepPurple,
-          title: const Text('Home'),
-          
-        ),
-        
+      appBar: AppBar(
+        backgroundColor: Colors.deepPurple,
+        title: const Text('Home'),
       ),
-      body:  Center(
-        child:GestureDetector(
-          onLongPress: (){},
-          onLongPressUp: (){},
-          child:Icon(
+      body: Center(
+        child: GestureDetector(
+          onLongPress: () {
+            print("Recording started...");
+            webSocketProvider.startRecording();
+          },
+          onLongPressUp: () {
+            print("Recording stopped.");
+            webSocketProvider.stopRecording();
+          },
+          child: const Icon(
             Icons.mic,
             size: 200,
             color: Colors.deepPurpleAccent,
-          ) ,
-          
-
+          ),
         ),
-
       ),
     );
   }
