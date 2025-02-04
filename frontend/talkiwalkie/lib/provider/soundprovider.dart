@@ -16,7 +16,7 @@ class WebSocketProvider with ChangeNotifier {
     connect();
   }
 
-  // Connect to WebSocket server
+ 
   void connect() {
     _channel = IOWebSocketChannel.connect('ws://your-server-url');
     _channel.stream.listen((message) {
@@ -26,7 +26,7 @@ class WebSocketProvider with ChangeNotifier {
     });
   }
 
-  // Start recording and send data to WebSocket
+  
   Future<void> startRecording() async {
     if (await _recorder.hasPermission()) {
       _isRecording = true;
@@ -41,7 +41,7 @@ class WebSocketProvider with ChangeNotifier {
       );
 
       _audioStream?.listen((audioData) {
-        _channel.sink.add(audioData); // Send raw PCM data to WebSocket
+        _channel.sink.add(audioData); 
       });
     }
   }
@@ -54,13 +54,13 @@ class WebSocketProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  // Convert PCM to WAV
+ 
   Uint8List convertPCMToWAV(Uint8List pcmData, {int sampleRate = 16000, int numChannels = 1, int bitsPerSample = 16}) {
     int byteRate = (sampleRate * numChannels * bitsPerSample) ~/ 8;
     int dataSize = pcmData.length;
     int chunkSize = 36 + dataSize;
 
-    // Create WAV header (44 bytes)
+    //lazam wav header hna 44 byte
     var header = ByteData(44);
     header.setUint32(0, 0x52494646, Endian.big); // "RIFF"
     header.setUint32(4, chunkSize, Endian.little); // Chunk size
@@ -76,11 +76,11 @@ class WebSocketProvider with ChangeNotifier {
     header.setUint32(36, 0x64617461, Endian.big); // "data"
     header.setUint32(40, dataSize, Endian.little); // Data size
 
-    // Combine WAV header + PCM data
+//ls9 wav m3a pcm 
     return Uint8List.fromList(header.buffer.asUint8List() + pcmData);
   }
 
-  // Play received audio
+  
   Future<void> _playAudio(Uint8List data) async {
     try {
       Uint8List wavData = convertPCMToWAV(data);
@@ -102,7 +102,7 @@ class WebSocketProvider with ChangeNotifier {
 
   bool get isRecording => _isRecording;
 
-  // Cleanup resources
+  
   @override
   void dispose() {
     _channel.sink.close();
