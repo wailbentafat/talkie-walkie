@@ -39,6 +39,8 @@ dependencies:
   just_audio: ^0.9.45
   record: ^5.2.0
   wav: ^1.3.0
+  
+  path_provider: ^2.1.1  # For accessing file paths
 
 dev_dependencies:
   flutter_test:
