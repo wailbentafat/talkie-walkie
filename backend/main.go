@@ -27,40 +27,79 @@ var logger = log.New(os.Stdout, "WS-SERVER: ", log.LstdFlags|log.Lshortfile)
 var broadcast = make(chan []byte)
 
 
-func handleConnection(w http.ResponseWriter, r *http.Request) {
-	ws, err := upgrader.Upgrade(w, r, nil)
-	if err != nil {
-		logger.Println("WebSocket Upgrade Error:", err)
-		return
-	}
-	clients[ws] = true
-	defer ws.Close()
+// func handleConnection(w http.ResponseWriter, r *http.Request) {
+// 	ws, err := upgrader.Upgrade(w, r, nil)
+// 	if err != nil {
+// 		logger.Println("WebSocket Upgrade Error:", err)
+// 		return
+// 	}
+// 	clients[ws] = true
+// 	defer ws.Close()
 
-	logger.Println("Client Connected")
+// 	logger.Println("Client Connected")
 
-	for {
-		_, audioData, err := ws.ReadMessage()
-		if err != nil {
-			logger.Println("Read Error:", err)
-			delete(clients, ws)
-			break
-		}
-
-		
-		if len(audioData) == 0 {
-			logger.Println("Received empty audio data!")
-			continue
-		}
-		logger.Printf("Received audio: %d bytes\n", len(audioData))
+// 	for {
+// 		_, audioData, err := ws.ReadMessage()
+// 		if err != nil {
+// 			logger.Println("Read Error:", err)
+// 			delete(clients, ws)
+// 			break
+// 		}
 
 		
-		err = saveWavFile(audioData, "received_audio.wav")
-		if err != nil {
-			logger.Println("Error saving WAV file:", err)
-		}
-		broadcast <- audioData
-	}
+// 		if len(audioData) == 0 {
+// 			logger.Println("Received empty audio data!")
+// 			continue
+// 		}
+// 		logger.Printf("Received audio: %d bytes\n", len(audioData))
+
+		
+// 		err = saveWavFile(audioData, "received_audio.wav")
+// 		if err != nil {
+// 			logger.Println("Error saving WAV file:", err)
+// 		}
+// 		broadcast <- audioData
+// 	}
 	
+// }
+func handleConnection(w http.ResponseWriter, r *http.Request) {
+    ws, err := upgrader.Upgrade(w, r, nil)
+    if err != nil {
+        logger.Println("WebSocket Upgrade Error:", err)
+        return
+    }
+    clients[ws] = true
+    defer func() {
+        delete(clients, ws)
+        ws.Close()
+    }()
+
+    logger.Println("Client Connected")
+
+    for {
+        _, audioChunk, err := ws.ReadMessage()
+        if err != nil {
+            logger.Println("Read Error:", err)
+            delete(clients, ws)
+            break
+        }
+
+        if len(audioChunk) == 0 {
+            logger.Println("Received empty chunk!")
+            continue
+        }
+
+        logger.Printf("Received audio chunk: %d bytes\n", len(audioChunk))
+
+       
+        for client := range clients {
+            if err := client.WriteMessage(websocket.BinaryMessage, audioChunk); err != nil {
+                client.Close()
+                delete(clients, client)
+            }
+			logger.Println("Audio chunk sent to all clients", len(audioChunk))
+        }
+    }
 }
 
 
