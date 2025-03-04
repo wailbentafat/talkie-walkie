@@ -190,7 +190,7 @@ class WebSocketProvider with ChangeNotifier {
     header.setUint16(34, 16, Endian.little);
     header.setUint32(36, 0x64617461, Endian.big); // "data"
     header.setUint32(40, pcmData.length, Endian.little);
-
+  
     return Uint8List.fromList(header.buffer.asUint8List() + pcmData);
   }
 
