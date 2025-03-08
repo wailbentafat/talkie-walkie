@@ -13,7 +13,7 @@ class WebSocketProvider with ChangeNotifier {
   bool _isRecording = false;
   bool _isConnected = false;
   
-  // For managing real-time audio chunks
+ 
   Directory? _tempDir;
   int _chunkCounter = 0;
   bool _isPlaying = false;
@@ -23,10 +23,9 @@ class WebSocketProvider with ChangeNotifier {
     connect();
   }
 
-  // Initialize temporary directory for audio chunks
   Future<void> _initTempDir() async {
     _tempDir = await getTemporaryDirectory();
-    // Create a subdirectory for our audio chunks
+ 
     Directory audioDir = Directory('${_tempDir!.path}/audio_chunks');
     if (!await audioDir.exists()) {
       await audioDir.create(recursive: true);
@@ -51,7 +50,7 @@ class WebSocketProvider with ChangeNotifier {
       _isConnected = false;
       notifyListeners();
       
-      // Attempt to reconnect after a delay
+    
       Future.delayed(Duration(seconds: 3), () {
         if (!_isConnected) connect();
       });
@@ -75,7 +74,7 @@ class WebSocketProvider with ChangeNotifier {
 
       audioStream.listen((data) {
         if (_isConnected) {
-          _channel.sink.add(data); // Send chunks live to WebSocket
+          _channel.sink.add(data); 
           print("📤 Sent audio chunk: ${data.length} bytes");
         }
       });
@@ -89,7 +88,7 @@ class WebSocketProvider with ChangeNotifier {
     print("⏹️ Recording stopped.");
   }
 
-  // Handle incoming audio and play it immediately
+ 
   Future<void> _handleIncomingAudio(Uint8List pcmData) async {
     if (_tempDir == null) await _initTempDir();
     
@@ -97,17 +96,17 @@ class WebSocketProvider with ChangeNotifier {
       // Convert PCM to WAV
       Uint8List wavData = _convertPCMToWav(pcmData);
       
-      // Create a unique filename for this chunk
+   
       String chunkPath = '${_tempDir!.path}/chunk_${_chunkCounter++}.wav';
       File chunkFile = File(chunkPath);
       await chunkFile.writeAsBytes(wavData);
       
       print("💾 Saved chunk to: $chunkPath");
       
-      // Play the audio immediately
+    
       await _playAudioChunk(chunkFile.path);
       
-      // Clean up old chunks to prevent filling storage
+   
       _cleanupOldChunks();
       
     } catch (e) {
@@ -151,13 +150,13 @@ class WebSocketProvider with ChangeNotifier {
       
       List<FileSystemEntity> files = _tempDir!.listSync();
       
-      // Keep only the 10 most recent chunks
+     
       if (files.length > 10) {
-        // Sort files by creation time
+     
         files.sort((a, b) => 
           File(a.path).statSync().modified.compareTo(File(b.path).statSync().modified));
         
-        // Delete oldest files
+     
         for (int i = 0; i < files.length - 10; i++) {
           await File(files[i].path).delete();
           print("🗑️ Deleted old chunk: ${files[i].path}");
